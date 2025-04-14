@@ -377,6 +377,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Функция проверки, является ли строка валидным JSON
+    function isValidJSON(str) {
+        try {
+            JSON.parse(str);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     // Функция декомпрессии данных
     async function decompress(data) {
         try {
@@ -390,33 +400,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Функция декодирования
+    // Обновленная функция декодирования
     async function decodeMessage(encodedMessage) {
         try {
-            // Первый уровень Base64
-            const decodedData = base64Decode(encodedMessage);
+            // Шаг 1: Пробуем простое base64 декодирование
+            const simpleDecoded = base64Decode(encodedMessage);
             
-            // Декомпрессия
-            const decompressedData = await decompress(new Uint8Array([...decodedData].map(c => c.charCodeAt(0))));
+            // Если получился валидный JSON, возвращаем его
+            if (isValidJSON(simpleDecoded)) {
+                return {
+                    success: true,
+                    data: JSON.parse(simpleDecoded),
+                    method: 'base64'
+                };
+            }
+
+            // Если это UTF-8 текст, пробуем декодировать его как base64
+            try {
+                const doubleDecoded = base64Decode(simpleDecoded);
+                if (isValidJSON(doubleDecoded)) {
+                    return {
+                        success: true,
+                        data: JSON.parse(doubleDecoded),
+                        method: 'double_base64'
+                    };
+                }
+            } catch (e) {
+                // Игнорируем ошибку и продолжаем
+            }
+
+            // Шаг 2: Пробуем декодирование со сжатием
+            const decompressed = await decompress(new Uint8Array([...simpleDecoded].map(c => c.charCodeAt(0))));
             
             try {
-                // Второй уровень Base64
-                const doubleDecodedData = base64Decode(decompressedData);
-                
-                // Попытка распарсить как JSON
-                const jsonData = JSON.parse(doubleDecodedData);
-                return { success: true, data: jsonData };
+                // Пробуем второй уровень base64 после декомпрессии
+                const decompressedDecoded = base64Decode(decompressed);
+                if (isValidJSON(decompressedDecoded)) {
+                    return {
+                        success: true,
+                        data: JSON.parse(decompressedDecoded),
+                        method: 'base64_zlib_base64'
+                    };
+                }
             } catch (e) {
-                // Если не удалось декодировать второй раз или распарсить JSON,
-                // возвращаем результат после первой декомпрессии
-                return { success: true, data: decompressedData };
+                // Если не удалось декодировать второй раз, проверяем сам decompressed
+                if (isValidJSON(decompressed)) {
+                    return {
+                        success: true,
+                        data: JSON.parse(decompressed),
+                        method: 'base64_zlib'
+                    };
+                }
             }
+
+            throw new Error('Не удалось декодировать сообщение ни одним из способов');
         } catch (e) {
-            return { success: false, error: e.message };
+            return { 
+                success: false, 
+                error: e.message 
+            };
         }
     }
 
-    // Обработчик кнопки декодирования
+    // Обновляем обработчик кнопки декодирования
     decodeButton.addEventListener('click', async () => {
         const encodedMessage = encodedInput.value.trim();
         const spinner = document.getElementById('decodeSpinner');
@@ -432,8 +478,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await decodeMessage(encodedMessage);
             
             if (result.success) {
+                const methodBadge = result.method ? 
+                    `<div class="decode-method">Метод декодирования: <span class="badge">${result.method}</span></div>` : '';
+                
                 if (typeof result.data === 'object') {
-                    decodedOutput.innerHTML = syntaxHighlight(result.data);
+                    decodedOutput.innerHTML = methodBadge + syntaxHighlight(result.data);
                 } else {
                     decodedOutput.textContent = result.data;
                 }
