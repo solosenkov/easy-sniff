@@ -267,8 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Просмотр деталей запроса
     function viewRequest(request) {
-        console.log('Детали запроса:', request);
-        // Здесь будет реализована функциональность просмотра деталей
+        if (request.type === 'websocket') {
+            currentWsUrl = request.url;
+            wsViewerModal.style.display = 'block';
+            if (!wsConnection) {
+                connectToWebSocket(currentWsUrl);
+            }
+        } else {
+            // Здесь будет функционал для просмотра обычных запросов
+            console.log('Детали запроса:', request);
+        }
     }
 
     // Функция для создания уведомления
@@ -533,4 +541,202 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.display = 'none';
         }
     });
+
+    // WebSocket Viewer
+    const wsViewerModal = document.getElementById('wsViewerModal');
+    const wsConnectBtn = document.getElementById('wsConnect');
+    const wsClearBtn = document.getElementById('wsClear');
+    const wsAutoDecodeBtn = document.getElementById('wsAutoDecode');
+    const wsStatusIndicator = document.querySelector('.ws-status-indicator');
+    const wsStatusText = document.querySelector('.ws-status-text');
+    const wsMessages = document.getElementById('wsMessages');
+    
+    let currentWsUrl = null;
+    let wsConnection = null;
+    let isAutoDecode = false;
+    
+    // Функция для форматирования времени
+    function formatDateTime(date) {
+        return date.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3
+        });
+    }
+
+    // Создание элемента сообщения
+    function createMessageElement(message, timestamp, isDecoded = false) {
+        const messageEl = document.createElement('div');
+        messageEl.className = 'ws-message';
+        
+        const header = document.createElement('div');
+        header.className = 'ws-message-header';
+        
+        const time = document.createElement('span');
+        time.className = 'ws-message-time';
+        time.textContent = formatDateTime(new Date(timestamp));
+        
+        const controls = document.createElement('div');
+        controls.className = 'ws-message-controls';
+        
+        const decodeBtn = document.createElement('button');
+        decodeBtn.className = 'ws-message-action';
+        decodeBtn.textContent = isDecoded ? 'Показать оригинал' : 'Декодировать';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'ws-message-action';
+        copyBtn.textContent = 'Копировать';
+        
+        controls.appendChild(decodeBtn);
+        controls.appendChild(copyBtn);
+        header.appendChild(time);
+        header.appendChild(controls);
+        
+        const content = document.createElement('div');
+        content.className = 'ws-message-content';
+        if (isDecoded) content.classList.add('decoded');
+        
+        try {
+            if (isDecoded) {
+                content.innerHTML = syntaxHighlight(message);
+            } else {
+                content.textContent = message;
+            }
+        } catch (e) {
+            content.textContent = message;
+        }
+        
+        messageEl.appendChild(header);
+        messageEl.appendChild(content);
+        
+        // Обработчики событий
+        decodeBtn.onclick = async () => {
+            if (!isDecoded) {
+                try {
+                    const result = await decodeMessage(message);
+                    if (result.success) {
+                        content.innerHTML = syntaxHighlight(result.data);
+                        content.classList.add('decoded');
+                        decodeBtn.textContent = 'Показать оригинал';
+                        isDecoded = true;
+                    }
+                } catch (e) {
+                    showNotification('Ошибка декодирования: ' + e.message, 'error');
+                }
+            } else {
+                content.textContent = message;
+                content.classList.remove('decoded');
+                decodeBtn.textContent = 'Декодировать';
+                isDecoded = false;
+            }
+        };
+        
+        copyBtn.onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(content.textContent);
+                showNotification('Скопировано в буфер обмена', 'success');
+            } catch (e) {
+                showNotification('Ошибка копирования', 'error');
+            }
+        };
+        
+        return messageEl;
+    }
+
+    // Обновление состояния WebSocket
+    function updateWsStatus(isConnected) {
+        wsStatusIndicator.classList.toggle('connected', isConnected);
+        wsStatusText.textContent = isConnected ? 'Подключено' : 'Отключено';
+        wsConnectBtn.textContent = isConnected ? 'Отключиться' : 'Подключиться';
+        wsConnectBtn.classList.toggle('active', isConnected);
+    }
+
+    // Подключение к WebSocket
+    function connectToWebSocket(url) {
+        if (wsConnection) {
+            wsConnection.close();
+        }
+
+        try {
+            wsConnection = new WebSocket(url);
+            
+            wsConnection.onopen = () => {
+                updateWsStatus(true);
+                showNotification('WebSocket подключен', 'success');
+            };
+            
+            wsConnection.onclose = () => {
+                updateWsStatus(false);
+                wsConnection = null;
+            };
+            
+            wsConnection.onerror = (error) => {
+                showNotification('Ошибка WebSocket: ' + error.message, 'error');
+            };
+            
+            wsConnection.onmessage = async (event) => {
+                const messageEl = createMessageElement(
+                    event.data,
+                    Date.now(),
+                    isAutoDecode
+                );
+                
+                if (isAutoDecode) {
+                    try {
+                        const result = await decodeMessage(event.data);
+                        if (result.success) {
+                            messageEl.querySelector('.ws-message-content').innerHTML = 
+                                syntaxHighlight(result.data);
+                            messageEl.querySelector('.ws-message-content').classList.add('decoded');
+                            messageEl.querySelector('.ws-message-action').textContent = 
+                                'Показать оригинал';
+                        }
+                    } catch (e) {
+                        console.error('Ошибка автодекодирования:', e);
+                    }
+                }
+                
+                wsMessages.insertBefore(messageEl, wsMessages.firstChild);
+            };
+        } catch (error) {
+            showNotification('Ошибка подключения: ' + error.message, 'error');
+        }
+    }
+
+    // Обработчики событий для WebSocket viewer
+    wsConnectBtn.onclick = () => {
+        if (wsConnection) {
+            wsConnection.close();
+        } else if (currentWsUrl) {
+            connectToWebSocket(currentWsUrl);
+        }
+    };
+
+    wsClearBtn.onclick = () => {
+        wsMessages.innerHTML = '';
+    };
+
+    wsAutoDecodeBtn.onclick = () => {
+        isAutoDecode = !isAutoDecode;
+        wsAutoDecodeBtn.classList.toggle('active', isAutoDecode);
+    };
+
+    // Закрытие WebSocket viewer
+    wsViewerModal.querySelector('.close').onclick = () => {
+        wsViewerModal.style.display = 'none';
+        if (wsConnection) {
+            wsConnection.close();
+        }
+    };
+
+    // Закрытие по клику вне модального окна
+    window.onclick = (event) => {
+        if (event.target === wsViewerModal) {
+            wsViewerModal.style.display = 'none';
+            if (wsConnection) {
+                wsConnection.close();
+            }
+        }
+    };
 });

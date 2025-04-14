@@ -81,6 +81,32 @@
         </div>
     </div>
 
+    <!-- Модальное окно для WebSocket сообщений -->
+    <div id="wsViewerModal" class="modal">
+        <div class="modal-content ws-viewer-content">
+            <div class="modal-header">
+                <div class="ws-header-info">
+                    <h2>WebSocket Viewer</h2>
+                    <div class="ws-status">
+                        <span class="ws-status-indicator"></span>
+                        <span class="ws-status-text">Отключено</span>
+                    </div>
+                </div>
+                <div class="ws-controls">
+                    <button id="wsConnect" class="ws-control-btn">Подключиться</button>
+                    <button id="wsClear" class="ws-control-btn">Очистить</button>
+                    <button id="wsAutoDecode" class="ws-control-btn">Авто-декодирование</button>
+                    <span class="close">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body ws-viewer-body">
+                <div class="ws-messages">
+                    <div class="messages-container" id="wsMessages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
