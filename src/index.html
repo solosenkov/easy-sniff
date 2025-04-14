@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Easy Sniff</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="notifications" class="notifications-container"></div>
+    <div class="header">
+        <h1>Easy Sniff</h1>
+        <div class="filter-container">
+            <div class="filter-type">
+                <label data-tooltip="XHR запросы">
+                    <input type="checkbox" value="xhr" checked> XHR
+                </label>
+                <label data-tooltip="WebSocket соединения">
+                    <input type="checkbox" value="websocket" checked> WebSocket
+                </label>
+                <label data-tooltip="Все остальные типы запросов">
+                    <input type="checkbox" value="other" checked> Другие
+                </label>
+            </div>
+            <input type="text" id="filter" placeholder="Фильтр запросов..." data-tooltip="Поиск по URL, методу или статусу">
+            <button id="wsDecoder" data-tooltip="Открыть декодер WS сообщений (Ctrl+D)">Декодер WS</button>
+            <button id="clearFilter" data-tooltip="Очистить все запросы (Ctrl+C)">Очистить все</button>
+        </div>
+    </div>
+    <div class="stats-and-mode">
+        <div class="stats">
+            Всего запросов: <span id="totalRequests">0</span> | 
+            Отфильтровано: <span id="filteredRequests">0</span> | 
+            Ошибок: <span id="errorRequests" class="error-count">0</span>
+        </div>
+        <div class="view-mode">
+            <button id="allRequestsMode" class="mode-button active" data-tooltip="Показать все запросы">Все запросы</button>
+            <button id="errorsMode" class="mode-button" data-tooltip="Показать только ошибки">Ошибки</button>
+        </div>
+    </div>
+    <table id="requestsTable">
+        <thead>
+            <tr>
+                <th data-sort="duration" data-tooltip="Нажмите для сортировки">Время (мс)</th>
+                <th data-sort="method" data-tooltip="Нажмите для сортировки">Метод</th>
+                <th data-sort="url" data-tooltip="Нажмите для сортировки">URL</th>
+                <th data-sort="status" data-tooltip="Нажмите для сортировки">Статус</th>
+                <th data-sort="type" data-tooltip="Нажмите для сортировки">Тип</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="requestsTableBody"></tbody>
+    </table>
+
+    <!-- Модальное окно для декодера -->
+    <div id="wsDecoderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Декодер WebSocket сообщений</h2>
+                <span class="close" data-tooltip="Закрыть (Esc)">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="decoder-container">
+                    <div class="input-section">
+                        <label for="encodedMessage">Закодированное сообщение:</label>
+                        <textarea id="encodedMessage" placeholder="Вставьте закодированное сообщение..."></textarea>
+                        <button id="decodeButton" data-tooltip="Декодировать сообщение">
+                            <span class="spinner" id="decodeSpinner"></span>
+                            Декодировать
+                        </button>
+                    </div>
+                    <div class="output-section">
+                        <label>Результат декодирования:</label>
+                        <div class="output-container">
+                            <button class="copy-json-button" data-tooltip="Копировать результат">Копировать</button>
+                            <span class="success-indicator">Скопировано!</span>
+                            <pre id="decodedMessage"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

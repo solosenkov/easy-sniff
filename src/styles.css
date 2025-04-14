@@ -1,0 +1,446 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-type {
+    display: flex;
+    gap: 5px;
+    margin-right: 15px;
+}
+
+#filter {
+    padding: 8px;
+    width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+th {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    background-color: #f8f9fa;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+th:hover {
+    background-color: #e9ecef;
+}
+
+th::after {
+    content: '↕';
+    margin-left: 5px;
+    opacity: 0.3;
+}
+
+th.sorted-asc::after {
+    content: '↓';
+    opacity: 1;
+}
+
+th.sorted-desc::after {
+    content: '↑';
+    opacity: 1;
+}
+
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Стили для методов */
+.method {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.method-GET { background-color: #28a745; color: white; }
+.method-POST { background-color: #007bff; color: white; }
+.method-PUT { background-color: #ffc107; color: black; }
+.method-DELETE { background-color: #dc3545; color: white; }
+.method-PATCH { background-color: #17a2b8; color: white; }
+.method-OPTIONS { background-color: #6c757d; color: white; }
+
+/* Стили для статусов */
+.status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.status-2xx { background-color: #28a745; color: white; }
+.status-3xx { background-color: #ffc107; color: black; }
+.status-4xx { background-color: #dc3545; color: white; }
+.status-5xx { background-color: #dc3545; color: white; }
+.status-pending { background-color: #6c757d; color: white; }
+
+.stats {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.stats span {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.url-cell {
+    max-width: 400px;
+    position: relative;
+}
+
+.url-content {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.url-content.expanded {
+    white-space: normal;
+    word-break: break-all;
+}
+
+.copy-button {
+    padding: 2px 8px;
+    margin-left: 5px;
+    font-size: 12px;
+    background-color: #6c757d;
+}
+
+.timestamp {
+    color: #666;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.notifications-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 12px 24px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+    max-width: 400px;
+}
+
+.notification.error {
+    border-left: 4px solid #dc3545;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0;
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.notification-close:hover {
+    color: #333;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.stats-and-mode {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.view-mode {
+    display: flex;
+    gap: 10px;
+}
+
+.mode-button {
+    background-color: #e9ecef;
+    color: #495057;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-button:hover {
+    background-color: #dee2e6;
+}
+
+.mode-button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.error-count {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Стили для модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    margin: 50px auto;
+    padding: 0;
+    width: 90%;
+    max-width: 1200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.close {
+    font-size: 28px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.decoder-container {
+    display: flex;
+    gap: 20px;
+    height: 500px;
+}
+
+.input-section, .output-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-section label, .output-section label {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#encodedMessage {
+    flex: 1;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: none;
+    margin-bottom: 10px;
+}
+
+#decodedMessage {
+    flex: 1;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: auto;
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+#decodeButton {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
+/* Стили для подсветки JSON */
+.json-key { color: #d63384; }
+.json-string { color: #198754; }
+.json-number { color: #0d6efd; }
+.json-boolean { color: #6f42c1; }
+.json-null { color: #dc3545; }
+
+/* Спиннер */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltips */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background-color: rgba(0,0,0,0.8);
+    color: white;
+    font-size: 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1000;
+}
+
+[data-tooltip]:hover:before {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Кнопка копирования в декодере */
+.copy-json-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 1;
+}
+
+.copy-json-button:hover {
+    background-color: #5a6268;
+}
+
+/* Индикатор успеха */
+.success-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    display: none;
+    z-index: 1;
+}
