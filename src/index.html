@@ -22,8 +22,24 @@
                 </label>
             </div>
             <input type="text" id="filter" placeholder="Фильтр запросов..." data-tooltip="Поиск по URL, методу или статусу">
-            <button id="wsDecoder" data-tooltip="Открыть декодер WS сообщений (Ctrl+D)">Декодер WS</button>
-            <button id="clearFilter" data-tooltip="Очистить все запросы (Ctrl+C)">Очистить все</button>
+            <div class="decoders-container">
+                <button id="wsDecoder" class="decoder-button">
+                    <span class="decoder-icon">🔌</span>
+                    Декодер WS
+                </button>
+                <button id="jwtDecoder" class="decoder-button">
+                    <span class="decoder-icon">🔑</span>
+                    Декодер JWT
+                </button>
+                <button id="curlSender" class="decoder-button">
+                    <span class="decoder-icon">🚀</span>
+                    cURL Sender
+                </button>
+                <button id="clearFilter" class="decoder-button" data-tooltip="Очистить все запросы (Ctrl+C)">
+                    <span class="decoder-icon">🗑️</span>
+                    Очистить
+                </button>
+            </div>
         </div>
     </div>
     <div class="stats-and-mode">
@@ -81,6 +97,47 @@
         </div>
     </div>
 
+    <!-- Модальное окно декодера JWT -->
+    <div id="jwtDecoderModal" class="modal">
+        <div class="modal-content decoder-modal">
+            <div class="modal-header">
+                <h2>JWT Декодер</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <textarea id="jwtInput" placeholder="Вставьте JWT токен"></textarea>
+                </div>
+                <div class="decoder-controls">
+                    <button id="jwtDecodeButton" class="primary-button">
+                        Декодировать
+                        <div id="jwtDecodeSpinner" class="spinner"></div>
+                    </button>
+                </div>
+                <div class="output-container">
+                    <div class="output-section">
+                        <h3>Header</h3>
+                        <pre id="jwtHeader" class="output json-output"></pre>
+                    </div>
+                    <div class="output-section">
+                        <h3>Payload</h3>
+                        <div class="payload-container">
+                            <button class="copy-json-button" data-target="payload">
+                                Копировать payload
+                                <span class="success-indicator">✓</span>
+                            </button>
+                            <pre id="jwtPayload" class="output json-output"></pre>
+                        </div>
+                    </div>
+                    <div class="output-section">
+                        <h3>Signature</h3>
+                        <pre id="jwtSignature" class="output"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Модальное окно для WebSocket сообщений -->
     <div id="wsViewerModal" class="modal">
         <div class="modal-content ws-viewer-content">
@@ -102,6 +159,184 @@
             <div class="modal-body ws-viewer-body">
                 <div class="ws-messages">
                     <div class="messages-container" id="wsMessages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра XHR запроса -->
+    <div id="requestViewerModal" class="modal">
+        <div class="modal-content request-viewer-content">
+            <div class="modal-header">
+                <h2>Просмотр запроса</h2>
+                <div class="request-controls">
+                    <button id="copyAsCurl" class="request-control-btn" data-tooltip="Скопировать как cURL">
+                        <span class="request-icon">📋</span>
+                        cURL
+                    </button>
+                    <span class="close">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body request-viewer-body">
+                <div class="request-tabs">
+                    <button class="tab-button active" data-tab="general">General</button>
+                    <button class="tab-button" data-tab="headers">Headers</button>
+                    <button class="tab-button" data-tab="request">Request</button>
+                    <button class="tab-button" data-tab="response">Response</button>
+                    <button class="tab-button" data-tab="timing">Timing</button>
+                </div>
+                <div class="tab-content">
+                    <!-- General -->
+                    <div class="tab-pane active" id="general">
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-label">Method:</div>
+                                <div class="info-value" id="reqMethod"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">URL:</div>
+                                <div class="info-value" id="reqUrl"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Status:</div>
+                                <div class="info-value" id="reqStatus"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Type:</div>
+                                <div class="info-value" id="reqType"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Time:</div>
+                                <div class="info-value" id="reqTime"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Headers -->
+                    <div class="tab-pane" id="headers">
+                        <div class="headers-section">
+                            <div class="section-header">
+                                <h3>Request Headers</h3>
+                                <button class="copy-button" data-target="requestHeaders">Копировать</button>
+                            </div>
+                            <pre id="requestHeaders" class="headers-content"></pre>
+                        </div>
+                        <div class="headers-section">
+                            <div class="section-header">
+                                <h3>Response Headers</h3>
+                                <button class="copy-button" data-target="responseHeaders">Копировать</button>
+                            </div>
+                            <pre id="responseHeaders" class="headers-content"></pre>
+                        </div>
+                        <div class="headers-section">
+                            <div class="section-header">
+                                <h3>Query Parameters</h3>
+                                <button class="copy-button" data-target="queryParams">Копировать</button>
+                            </div>
+                            <pre id="queryParams" class="headers-content"></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Request -->
+                    <div class="tab-pane" id="request">
+                        <div class="section-header">
+                            <h3>Request Body</h3>
+                            <button class="copy-button" data-target="requestBody">Копировать</button>
+                        </div>
+                        <pre id="requestBody" class="request-content"></pre>
+                    </div>
+                    
+                    <!-- Response -->
+                    <div class="tab-pane" id="response">
+                        <div class="section-header">
+                            <h3>Response Body</h3>
+                            <button class="copy-button" data-target="responseBody">Копировать</button>
+                        </div>
+                        <pre id="responseBody" class="response-content"></pre>
+                    </div>
+                    
+                    <!-- Timing -->
+                    <div class="tab-pane" id="timing">
+                        <div class="timing-container">
+                            <div class="timing-bar">
+                                <div class="timing-phase" id="requestTime"></div>
+                                <div class="timing-phase" id="responseTime"></div>
+                            </div>
+                            <div class="timing-labels">
+                                <div class="timing-label">Запрос отправлен</div>
+                                <div class="timing-label">Ответ получен</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для работы с cURL -->
+    <div id="curlSenderModal" class="modal">
+        <div class="modal-content curl-sender-content">
+            <div class="modal-header">
+                <h2>cURL Sender</h2>
+                <div class="curl-controls">
+                    <button id="clearCurl" class="request-control-btn" data-tooltip="Очистить всё">
+                        <span class="request-icon">🗑️</span>
+                        Очистить
+                    </button>
+                    <span class="close">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body curl-sender-body">
+                <div class="curl-input-section">
+                    <textarea id="curlInput" placeholder="Вставьте cURL запрос..."></textarea>
+                    <div class="curl-actions">
+                        <button id="parseCurlButton" class="primary-button">
+                            <span class="request-icon">👁️</span>
+                            Просмотреть
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="parsed-curl-section">
+                    <div class="parsed-curl-header">
+                        <h3>Распарсенный запрос</h3>
+                        <div class="request-info">
+                            <span id="requestMethodBadge" class="method-badge"></span>
+                            <span id="requestUrlDisplay" class="url-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="curl-editor">
+                        <div class="editor-section">
+                            <div class="editor-header">
+                                <h4>Тело запроса:</h4>
+                                <button id="beautifyJson" class="primary-button">
+                                    <span class="request-icon">✨</span>
+                                    Beauty
+                                </button>
+                            </div>
+                            <textarea id="requestBodyEditor" class="json-editor" placeholder="Тело запроса в формате JSON"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="curl-actions">
+                        <button id="sendCurlRequest" class="primary-button">
+                            <span class="request-icon">📤</span>
+                            Отправить
+                            <div class="spinner" id="sendSpinner"></div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="response-section">
+                    <div class="response-header">
+                        <h3>Ответ</h3>
+                        <div class="response-info">
+                            <span id="responseStatus"></span>
+                            <span id="responseTime"></span>
+                        </div>
+                    </div>
+                    <pre id="responseBody" class="response-body json-output"></pre>
                 </div>
             </div>
         </div>

@@ -677,3 +677,752 @@ tr:hover {
 .messages-container::-webkit-scrollbar-thumb:hover {
     background: #4d4d4d;
 }
+
+/* Обновляем стили для уведомлений в WebSocket viewer */
+.ws-viewer-content .notifications-container {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.ws-viewer-content .notification {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-left: 4px solid #dc3545;
+    margin-bottom: 10px;
+}
+
+.ws-viewer-content .notification.success {
+    border-left-color: #28a745;
+}
+
+/* Стили для декодеров */
+.decoders-container {
+    display: flex;
+    gap: 10px;
+}
+
+.decoder-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.decoder-button:hover {
+    background: #0056b3;
+}
+
+.decoder-icon {
+    font-size: 16px;
+}
+
+/* JWT Декодер */
+.output-section {
+    margin-bottom: 20px;
+}
+
+.output-section h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 14px;
+}
+
+#jwtHeader, #jwtPayload, #jwtSignature {
+    margin: 0;
+    padding: 10px;
+    background: #fffafa;
+    border-radius: 4px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.decoder-modal .output-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.decoder-modal .input-group {
+    margin-bottom: 20px;
+}
+
+#jwtInput {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.payload-container {
+    position: relative;
+    margin-top: 10px;
+}
+
+.payload-container .copy-json-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 2;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.payload-container .copy-json-button:hover {
+    opacity: 1;
+}
+
+.decoder-controls {
+    margin-bottom: 20px;
+}
+
+.primary-button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.primary-button:hover {
+    background: #0056b3;
+}
+
+.decoder-modal .output-section {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+/* XHR Request Viewer styles */
+.request-viewer-content {
+    height: 90vh;
+}
+
+.request-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.request-control-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.request-control-btn:hover {
+    background: #0056b3;
+}
+
+.request-icon {
+    font-size: 16px;
+}
+
+.request-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.tab-button {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    color: #495057;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.tab-button:hover {
+    background: #e9ecef;
+}
+
+.tab-button.active {
+    background: #007bff;
+    color: white;
+}
+
+.tab-pane {
+    display: none;
+    padding: 20px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.info-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.info-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.info-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.info-value {
+    font-family: monospace;
+    word-break: break-all;
+}
+
+.headers-section {
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #495057;
+}
+
+.headers-content,
+.request-content,
+.response-content {
+    margin: 0;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow: auto;
+}
+
+.timing-container {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.timing-bar {
+    height: 30px;
+    background: #e9ecef;
+    border-radius: 15px;
+    position: relative;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.timing-phase {
+    height: 100%;
+    position: absolute;
+    transition: width 0.3s ease;
+}
+
+#requestTime {
+    background: #007bff;
+    opacity: 0.5;
+}
+
+#responseTime {
+    background: #28a745;
+    opacity: 0.5;
+}
+
+.timing-labels {
+    display: flex;
+    justify-content: space-between;
+    color: #6c757d;
+    font-size: 12px;
+}
+
+/* Стили для подсветки JSON в request/response */
+.json-content {
+    color: #212529;
+}
+
+.json-content .key {
+    color: #d63384;
+}
+
+.json-content .string {
+    color: #198754;
+}
+
+.json-content .number {
+    color: #0d6efd;
+}
+
+.json-content .boolean {
+    color: #6f42c1;
+}
+
+.json-content .null {
+    color: #dc3545;
+}
+
+/* cURL Sender styles */
+.curl-sender-content {
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.curl-sender-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+
+.curl-input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#curlInput {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    background: #f8f9fa;
+}
+
+.curl-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.parsed-curl-section {
+    background: white;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.parsed-curl-section.visible {
+    display: block;
+}
+
+.parsed-curl-header {
+    margin-bottom: 20px;
+}
+
+.parsed-curl-header h3 {
+    margin: 0 0 10px 0;
+    color: #495057;
+}
+
+.request-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.method-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: white;
+}
+
+.url-display {
+    font-family: monospace;
+    color: #495057;
+    word-break: break-all;
+}
+
+.curl-editor {
+    margin: 20px 0;
+}
+
+.editor-section {
+    margin-bottom: 20px;
+}
+
+.editor-section h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+}
+
+.json-editor {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    background: #f8f9fa;
+}
+
+.response-section {
+    display: none;
+    background: white;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.response-section.visible {
+    display: block;
+}
+
+.response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.response-header h3 {
+    margin: 0;
+    color: #495057;
+}
+
+.response-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#responseStatus {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+#responseStatus.success {
+    background: #28a745;
+    color: white;
+}
+
+#responseStatus.error {
+    background: #dc3545;
+    color: white;
+}
+
+#responseTime {
+    color: #6c757d;
+}
+
+.response-body {
+    margin: 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow: auto;
+}
+
+.spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    margin-left: 8px;
+    animation: spin 1s linear infinite;
+}
+
+.spinner.visible {
+    display: inline-block;
+}
+
+/* cURL Sender styles */
+.curl-sender-content {
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.curl-sender-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+
+.curl-input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#curlInput {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    background: #f8f9fa;
+}
+
+.curl-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.parsed-curl-section {
+    background: white;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.parsed-curl-section.visible {
+    display: block;
+}
+
+.parsed-curl-header {
+    margin-bottom: 20px;
+}
+
+.parsed-curl-header h3 {
+    margin: 0 0 10px 0;
+    color: #495057;
+}
+
+.request-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.method-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: white;
+}
+
+.url-display {
+    font-family: monospace;
+    color: #495057;
+    word-break: break-all;
+}
+
+.curl-editor {
+    margin: 20px 0;
+}
+
+.editor-section {
+    margin-bottom: 20px;
+}
+
+.editor-section h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+}
+
+.json-editor {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    background: #f8f9fa;
+}
+
+.response-section {
+    display: none;
+    background: white;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.response-section.visible {
+    display: block;
+}
+
+.response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.response-header h3 {
+    margin: 0;
+    color: #495057;
+}
+
+.response-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#responseStatus {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+#responseStatus.success {
+    background: #28a745;
+    color: white;
+}
+
+#responseStatus.error {
+    background: #dc3545;
+    color: white;
+}
+
+#responseTime {
+    color: #6c757d;
+}
+
+.response-body {
+    margin: 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow: auto;
+}
+
+.spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    margin-left: 8px;
+    animation: spin 1s linear infinite;
+}
+
+.spinner.visible {
+    display: inline-block;
+}
+
+.curl-sender-content .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.curl-sender-content .modal-header h2 {
+    margin: 0;
+}
+
+.curl-sender-content .curl-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.curl-sender-content .close {
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    padding: 0 5px;
+    margin-left: 15px;
+    line-height: 1;
+}
+
+.curl-sender-content .close:hover {
+    color: #333;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#beautifyJson {
+    padding: 6px 12px;
+    font-size: 13px;
+}

@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Просмотр деталей запроса
-    function viewRequest(request) {
+    async function viewRequest(request) {
         if (request.type === 'websocket') {
             currentWsUrl = request.url;
             wsViewerModal.style.display = 'block';
@@ -411,8 +411,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обновленная функция декодирования
     async function decodeMessage(encodedMessage) {
         try {
+            // Очищаем строку от кавычек в начале и конце
+            let cleanMessage = encodedMessage;
+            if (cleanMessage.startsWith('"') && cleanMessage.endsWith('"')) {
+                cleanMessage = cleanMessage.slice(1, -1);
+            }
+            // Заменяем экранированные кавычки на обычные
+            cleanMessage = cleanMessage.replace(/\\"/g, '"');
+
             // Шаг 1: Пробуем простое base64 декодирование
-            const simpleDecoded = base64Decode(encodedMessage);
+            const simpleDecoded = base64Decode(cleanMessage);
             
             // Если получился валидный JSON, возвращаем его
             if (isValidJSON(simpleDecoded)) {
@@ -554,6 +562,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentWsUrl = null;
     let wsConnection = null;
     let isAutoDecode = false;
+
+    // Скрываем кнопку авто-декодирования
+    wsAutoDecodeBtn.style.display = 'none';
     
     // Функция для форматирования времени
     function formatDateTime(date) {
@@ -565,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Создание элемента сообщения
+    // Обновляем функцию создания элемента сообщения
     function createMessageElement(message, timestamp, isDecoded = false) {
         const messageEl = document.createElement('div');
         messageEl.className = 'ws-message';
@@ -582,7 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const decodeBtn = document.createElement('button');
         decodeBtn.className = 'ws-message-action';
-        decodeBtn.textContent = isDecoded ? 'Показать оригинал' : 'Декодировать';
+        decodeBtn.textContent = 'Декодировать';
         
         const copyBtn = document.createElement('button');
         copyBtn.className = 'ws-message-action';
@@ -595,61 +606,48 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const content = document.createElement('div');
         content.className = 'ws-message-content';
-        if (isDecoded) content.classList.add('decoded');
-        
-        try {
-            if (isDecoded) {
-                content.innerHTML = syntaxHighlight(message);
-            } else {
-                content.textContent = message;
-            }
-        } catch (e) {
-            content.textContent = message;
-        }
+        content.textContent = message;
         
         messageEl.appendChild(header);
         messageEl.appendChild(content);
         
         // Обработчики событий
-        decodeBtn.onclick = async () => {
-            if (!isDecoded) {
-                try {
-                    const result = await decodeMessage(message);
-                    if (result.success) {
-                        content.innerHTML = syntaxHighlight(result.data);
-                        content.classList.add('decoded');
-                        decodeBtn.textContent = 'Показать оригинал';
-                        isDecoded = true;
-                    }
-                } catch (e) {
-                    showNotification('Ошибка декодирования: ' + e.message, 'error');
-                }
-            } else {
-                content.textContent = message;
-                content.classList.remove('decoded');
-                decodeBtn.textContent = 'Декодировать';
-                isDecoded = false;
-            }
+        decodeBtn.onclick = () => {
+            console.log('Сообщение для декодирования:', message);
+            
+            // Получаем элементы модального окна
+            const wsDecoderModal = document.getElementById('wsDecoderModal');
+            const encodedInput = document.getElementById('encodedMessage');
+            const decodeButton = document.getElementById('decodeButton');
+            
+            // Очищаем предыдущий результат
+            document.getElementById('decodedMessage').innerHTML = '';
+            
+            // Открываем модальное окно
+            wsDecoderModal.style.display = 'block';
+            
+            // Вставляем сообщение в поле ввода
+            encodedInput.value = message;
+            console.log('Вставленное сообщение:', encodedInput.value);
+            
+            // Запускаем декодирование
+            setTimeout(() => {
+                decodeButton.click();
+            }, 100);
         };
         
         copyBtn.onclick = async () => {
-            try {
-                await navigator.clipboard.writeText(content.textContent);
-                showNotification('Скопировано в буфер обмена', 'success');
-            } catch (e) {
-                showNotification('Ошибка копирования', 'error');
-            }
+            // ...existing code...
         };
         
         return messageEl;
     }
 
-    // Обновление состояния WebSocket
+    // Обновление статуса WebSocket соединения
     function updateWsStatus(isConnected) {
         wsStatusIndicator.classList.toggle('connected', isConnected);
         wsStatusText.textContent = isConnected ? 'Подключено' : 'Отключено';
         wsConnectBtn.textContent = isConnected ? 'Отключиться' : 'Подключиться';
-        wsConnectBtn.classList.toggle('active', isConnected);
     }
 
     // Подключение к WebSocket
@@ -684,13 +682,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (isAutoDecode) {
                     try {
-                        const result = await decodeMessage(event.data);
+                        // Очищаем сообщение от экранированных кавычек
+                        const cleanMessage = event.data.replace(/\\"/g, '"');
+                        const result = await decodeMessage(cleanMessage);
                         if (result.success) {
-                            messageEl.querySelector('.ws-message-content').innerHTML = 
-                                syntaxHighlight(result.data);
-                            messageEl.querySelector('.ws-message-content').classList.add('decoded');
-                            messageEl.querySelector('.ws-message-action').textContent = 
-                                'Показать оригинал';
+                            const content = messageEl.querySelector('.ws-message-content');
+                            content.innerHTML = syntaxHighlight(result.data);
+                            content.classList.add('decoded');
+                            messageEl.querySelector('.ws-message-action').textContent = 'Показать оригинал';
                         }
                     } catch (e) {
                         console.error('Ошибка автодекодирования:', e);
@@ -739,4 +738,505 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
+
+    // JWT Декодер
+    const jwtModal = document.getElementById('jwtDecoderModal');
+    const jwtDecoderBtn = document.getElementById('jwtDecoder');
+    const jwtCloseBtn = jwtModal.querySelector('.close');
+    const jwtDecodeButton = document.getElementById('jwtDecodeButton');
+    const jwtInput = document.getElementById('jwtInput');
+    const jwtSpinner = document.getElementById('jwtDecodeSpinner');
+    
+    // Открытие/закрытие модального окна JWT декодера
+    jwtDecoderBtn.onclick = () => jwtModal.style.display = 'block';
+    jwtCloseBtn.onclick = () => jwtModal.style.display = 'none';
+    window.onclick = (event) => {
+        if (event.target == jwtModal) {
+            jwtModal.style.display = 'none';
+        }
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    // Функция декодирования JWT
+    function decodeJWT(token) {
+        try {
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                throw new Error('Неверный формат JWT токена');
+            }
+
+            // Декодируем каждую часть
+            const decodedHeader = JSON.parse(atob(parts[0]));
+            const decodedPayload = JSON.parse(atob(parts[1]));
+            // Подпись оставляем как есть, она в base64
+            const signature = parts[2];
+
+            return {
+                success: true,
+                header: decodedHeader,
+                payload: decodedPayload,
+                signature: signature
+            };
+        } catch (e) {
+            return {
+                success: false,
+                error: e.message
+            };
+        }
+    }
+
+    // Обработчик кнопки декодирования JWT
+    jwtDecodeButton.addEventListener('click', () => {
+        const token = jwtInput.value.trim();
+        if (!token) {
+            document.getElementById('jwtHeader').innerHTML = 
+                '<span class="json-null">Введите JWT токен</span>';
+            return;
+        }
+
+        try {
+            jwtDecodeButton.disabled = true;
+            jwtSpinner.style.display = 'inline-block';
+            
+            const result = decodeJWT(token);
+            
+            if (result.success) {
+                document.getElementById('jwtHeader').innerHTML = 
+                    syntaxHighlight(result.header);
+                document.getElementById('jwtPayload').innerHTML = 
+                    syntaxHighlight(result.payload);
+                document.getElementById('jwtSignature').textContent = 
+                    result.signature;
+            } else {
+                document.getElementById('jwtHeader').innerHTML = 
+                    `<span class="json-null">Ошибка: ${result.error}</span>`;
+                document.getElementById('jwtPayload').innerHTML = '';
+                document.getElementById('jwtSignature').textContent = '';
+            }
+        } catch (error) {
+            document.getElementById('jwtHeader').innerHTML = 
+                `<span class="json-null">Ошибка декодирования: ${error.message}</span>`;
+        } finally {
+            jwtDecodeButton.disabled = false;
+            jwtSpinner.style.display = 'none';
+        }
+    });
+
+    // Копирование payload
+    const jwtCopyButton = jwtModal.querySelector('.copy-json-button');
+    jwtCopyButton.addEventListener('click', async () => {
+        const payload = document.getElementById('jwtPayload').textContent;
+        if (!payload) return;
+
+        try {
+            await navigator.clipboard.writeText(payload);
+            const successIndicator = jwtCopyButton.querySelector('.success-indicator');
+            successIndicator.style.display = 'inline';
+            setTimeout(() => {
+                successIndicator.style.display = 'none';
+            }, 2000);
+        } catch (err) {
+            console.error('Ошибка при копировании:', err);
+        }
+    });
+
+    // Добавляем горячую клавишу для открытия JWT декодера (Ctrl/Cmd + J)
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+            e.preventDefault();
+            jwtDecoderBtn.click();
+        }
+    });
+
+    // Функции для работы с модальным окном запроса
+    const requestViewerModal = document.getElementById('requestViewerModal');
+    const requestTabs = document.querySelectorAll('.request-tabs .tab-button');
+    const copyAsCurlBtn = document.getElementById('copyAsCurl');
+
+    // Переключение вкладок
+    requestTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const activeTab = document.querySelector('.tab-button.active');
+            const activePane = document.querySelector('.tab-pane.active');
+            
+            activeTab.classList.remove('active');
+            activePane.classList.remove('active');
+            
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Функция для форматирования JSON
+    function formatJSON(json) {
+        try {
+            if (typeof json === 'string') {
+                json = JSON.parse(json);
+            }
+            return JSON.stringify(json, null, 2);
+        } catch (e) {
+            return json;
+        }
+    }
+
+    // Функция для форматирования заголовков
+    function formatHeaders(headers) {
+        if (!headers) return '';
+        return headers.map(h => `${h.name}: ${h.value}`).join('\n');
+    }
+
+    // Функция для генерации cURL запроса
+    function generateCurl(request) {
+        let curl = `curl -X ${request.method} '${request.url}'`;
+        
+        // Добавляем заголовки
+        if (request.requestHeaders) {
+            request.requestHeaders.forEach(header => {
+                curl += `\n  -H '${header.name}: ${header.value}'`;
+            });
+        }
+        
+        // Добавляем тело запроса
+        if (request.requestData) {
+            try {
+                const data = JSON.stringify(JSON.parse(request.requestData));
+                curl += `\n  -d '${data}'`;
+            } catch (e) {
+                curl += `\n  -d '${request.requestData}'`;
+            }
+        } else if (request.formData) {
+            for (const [key, value] of Object.entries(request.formData)) {
+                curl += `\n  -F '${key}=${value}'`;
+            }
+        }
+        
+        return curl;
+    }
+
+    // Функция для показа деталей запроса
+    async function viewRequest(request) {
+        if (request.type === 'websocket') {
+            // Обработка WebSocket осталась без изменений
+            currentWsUrl = request.url;
+            wsViewerModal.style.display = 'block';
+            if (!wsConnection) {
+                connectToWebSocket(currentWsUrl);
+            }
+            return;
+        }
+        
+        // Получаем полные детали запроса из background script
+        chrome.runtime.sendMessage({
+            type: 'getRequestDetails',
+            requestId: request.requestId
+        }, response => {
+            if (response.success) {
+                const details = response.request;
+                
+                // Заполняем основную информацию
+                document.getElementById('reqMethod').textContent = details.method;
+                document.getElementById('reqUrl').textContent = details.url;
+                document.getElementById('reqStatus').textContent = details.status || 'pending';
+                document.getElementById('reqType').textContent = details.type;
+                document.getElementById('reqTime').textContent = `${details.duration || '...'} ms`;
+                
+                // Заполняем заголовки
+                document.getElementById('requestHeaders').textContent = formatHeaders(details.requestHeaders);
+                document.getElementById('responseHeaders').textContent = formatHeaders(details.responseHeaders);
+                
+                // Заполняем Query Parameters
+                const url = new URL(details.url);
+                const params = {};
+                url.searchParams.forEach((value, key) => {
+                    params[key] = value;
+                });
+                document.getElementById('queryParams').textContent = formatJSON(params);
+                
+                // Заполняем тело запроса
+                if (details.requestData) {
+                    document.getElementById('requestBody').textContent = formatJSON(details.requestData);
+                } else if (details.formData) {
+                    document.getElementById('requestBody').textContent = formatJSON(details.formData);
+                }
+                
+                // Настройка временной шкалы
+                if (details.startTime && details.endTime) {
+                    const duration = details.endTime - details.startTime;
+                    document.getElementById('requestTime').style.width = '30%';
+                    document.getElementById('responseTime').style.width = '70%';
+                }
+                
+                // Обработчик копирования как cURL
+                copyAsCurlBtn.onclick = async () => {
+                    const curl = generateCurl(details);
+                    await copyToClipboard(curl);
+                    showNotification('cURL скопирован в буфер обмена', 'success');
+                };
+                
+                // Показываем модальное окно
+                requestViewerModal.style.display = 'block';
+            }
+        });
+    }
+
+    // Закрытие модального окна
+    requestViewerModal.querySelector('.close').onclick = () => {
+        requestViewerModal.style.display = 'none';
+    };
+
+    // Копирование содержимого
+    document.querySelectorAll('.copy-button').forEach(button => {
+        button.addEventListener('click', async () => {
+            const target = document.getElementById(button.dataset.target);
+            if (target) {
+                await copyToClipboard(target.textContent);
+                showNotification('Скопировано в буфер обмена', 'success');
+            }
+        });
+    });
+
+    // cURL Sender
+    const curlSenderModal = document.getElementById('curlSenderModal');
+    const curlSenderBtn = document.getElementById('curlSender');
+    const curlInput = document.getElementById('curlInput');
+    const parseCurlButton = document.getElementById('parseCurlButton');
+    const clearCurlButton = document.getElementById('clearCurl');
+    const sendCurlRequest = document.getElementById('sendCurlRequest');
+    const parsedCurlSection = document.querySelector('.parsed-curl-section');
+    const responseSection = document.querySelector('.response-section');
+    
+    // Открытие/закрытие модального окна
+    curlSenderBtn.onclick = () => {
+        curlSenderModal.style.display = 'block';
+        clearCurlForm();
+    };
+    
+    curlSenderModal.querySelector('.close').onclick = () => {
+        curlSenderModal.style.display = 'none';
+    };
+
+    // Очистка формы
+    function clearCurlForm() {
+        curlInput.value = '';
+        parsedCurlSection.style.display = 'none';
+        responseSection.style.display = 'none';
+        document.getElementById('requestBodyEditor').value = '';
+        document.getElementById('requestMethodBadge').textContent = '';
+        document.getElementById('requestUrlDisplay').textContent = '';
+    }
+
+    clearCurlButton.onclick = clearCurlForm;
+
+    // Функция для парсинга cURL запроса
+    function parseCurlCommand(curlCommand) {
+        // Убираем переносы строк с обратным слешем и нормализуем пробелы
+        const cleanCommand = curlCommand
+            .replace(/\\\r?\n\s*/g, ' ')  // Убираем переносы строк с бэкслешем
+            .replace(/\s+/g, ' ')         // Заменяем множественные пробелы на один
+            .trim();
+
+        const result = {
+            method: 'GET',
+            url: '',
+            headers: {},
+            body: null,
+            cookies: {}
+        };
+
+        // Извлекаем URL - ищем первый аргумент в кавычках после curl
+        const urlMatch = cleanCommand.match(/curl\s+['"]([^'"]+)['"]/);
+        if (urlMatch) {
+            result.url = urlMatch[1];
+        }
+
+        // Ищем явно указанный метод через -X или --request
+        const methodMatch = cleanCommand.match(/-X\s+['"]?([A-Z]+)['"]?|--request\s+['"]?([A-Z]+)['"]?/);
+        if (methodMatch) {
+            result.method = methodMatch[1] || methodMatch[2];
+        }
+
+        // Ищем заголовки
+        const headerMatches = cleanCommand.matchAll(/-H\s+['"]([^'"]+)['"]|--header\s+['"]([^'"]+)['"]/g);
+        for (const match of headerMatches) {
+            const headerStr = match[1] || match[2];
+            const colonIndex = headerStr.indexOf(':');
+            if (colonIndex > -1) {
+                const name = headerStr.slice(0, colonIndex).trim();
+                const value = headerStr.slice(colonIndex + 1).trim();
+                result.headers[name] = value;
+            }
+        }
+
+        // Ищем cookies
+        const cookieMatches = cleanCommand.match(/-b\s+['"]([^'"]+)['"]/);
+        if (cookieMatches) {
+            const cookies = cookieMatches[1].split(';');
+            cookies.forEach(cookie => {
+                const [name, ...valueParts] = cookie.trim().split('=');
+                result.cookies[name] = valueParts.join('=');
+            });
+        }
+
+        // Ищем тело запроса
+        let dataMatch = cleanCommand.match(/--data-raw\s+['"](.+?)['"]/);
+        if (!dataMatch) {
+            dataMatch = cleanCommand.match(/--data\s+['"](.+?)['"]/);
+        }
+        if (!dataMatch) {
+            dataMatch = cleanCommand.match(/-d\s+['"](.+?)['"]/);
+        }
+
+        if (dataMatch) {
+            // Если есть тело запроса, это автоматически означает POST метод,
+            // если метод не был явно указан через -X или --request
+            if (!methodMatch) {
+                result.method = 'POST';
+            }
+
+            try {
+                // Пробуем распарсить как JSON
+                result.body = JSON.parse(dataMatch[1]);
+            } catch {
+                // Если не получилось распарсить как JSON, оставляем как есть
+                result.body = dataMatch[1];
+            }
+        }
+
+        return result;
+    }
+
+    // Обработка нажатия на кнопку Parse
+    parseCurlButton.addEventListener('click', () => {
+        const curlCommand = curlInput.value.trim();
+        if (!curlCommand) {
+            showNotification('Введите cURL запрос', 'error');
+            return;
+        }
+
+        try {
+            const parsed = parseCurlCommand(curlCommand);
+            
+            // Отображаем метод
+            const methodBadge = document.getElementById('requestMethodBadge');
+            methodBadge.textContent = parsed.method;
+            methodBadge.className = `method-badge method-${parsed.method}`;
+            
+            // Отображаем URL
+            document.getElementById('requestUrlDisplay').textContent = parsed.url;
+            
+            // Отображаем тело запроса
+            const requestBodyEditor = document.getElementById('requestBodyEditor');
+            if (parsed.body) {
+                if (typeof parsed.body === 'object') {
+                    requestBodyEditor.value = JSON.stringify(parsed.body, null, 2);
+                } else {
+                    requestBodyEditor.value = parsed.body;
+                }
+            } else {
+                requestBodyEditor.value = '';
+            }
+            
+            // Сохраняем данные для отправки
+            requestBodyEditor.dataset.originalMethod = parsed.method;
+            requestBodyEditor.dataset.originalUrl = parsed.url;
+            requestBodyEditor.dataset.originalHeaders = JSON.stringify(parsed.headers);
+            
+            // Показываем секцию с распарсенным запросом
+            parsedCurlSection.style.display = 'block';
+            // Скрываем секцию ответа если она была открыта
+            responseSection.style.display = 'none';
+            
+            showNotification('cURL запрос успешно распарсен', 'success');
+        } catch (error) {
+            showNotification('Ошибка парсинга cURL: ' + error.message, 'error');
+        }
+    });
+
+    // Отправка запроса
+    sendCurlRequest.addEventListener('click', async () => {
+        const requestBodyEditor = document.getElementById('requestBodyEditor');
+        const spinner = document.getElementById('sendSpinner');
+        
+        try {
+            const method = requestBodyEditor.dataset.originalMethod;
+            const url = requestBodyEditor.dataset.originalUrl;
+            const headers = JSON.parse(requestBodyEditor.dataset.originalHeaders);
+            let body = requestBodyEditor.value.trim();
+            
+            if (body) {
+                try {
+                    body = JSON.parse(body);
+                } catch {
+                    // Если не удалось распарсить как JSON, отправляем как есть
+                }
+            }
+
+            spinner.classList.add('visible');
+            responseSection.style.display = 'none';
+            
+            const startTime = Date.now();
+            const response = await fetch(url, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : undefined,
+                credentials: 'include' // Для отправки cookies
+            });
+            
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+            
+            // Получаем тело ответа
+            let responseText = '';
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                const jsonResponse = await response.json();
+                responseText = JSON.stringify(jsonResponse, null, 2);
+            } else {
+                responseText = await response.text();
+            }
+            
+            // Обновляем интерфейс
+            const statusEl = document.getElementById('responseStatus');
+            statusEl.textContent = `${response.status} ${response.statusText}`;
+            statusEl.className = response.ok ? 'success' : 'error';
+            
+            document.getElementById('responseTime').textContent = `${duration}ms`;
+            document.getElementById('responseBody').textContent = responseText;
+            
+            responseSection.style.display = 'block';
+        } catch (error) {
+            showNotification('Ошибка отправки запроса: ' + error.message, 'error');
+        } finally {
+            spinner.classList.remove('visible');
+        }
+    });
+
+    // Обработка Ctrl+Enter для быстрой отправки
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && curlSenderModal.style.display === 'block') {
+            sendCurlRequest.click();
+        }
+    });
+
+    const beautifyJsonBtn = document.getElementById('beautifyJson');
+    
+    beautifyJsonBtn.addEventListener('click', () => {
+        const editor = document.getElementById('requestBodyEditor');
+        const text = editor.value.trim();
+        
+        if (!text) return;
+        
+        try {
+            // Пробуем распарсить как JSON
+            const json = JSON.parse(text);
+            // Форматируем с отступами
+            editor.value = JSON.stringify(json, null, 2);
+            showNotification('JSON отформатирован', 'success');
+        } catch (error) {
+            showNotification('Ошибка: Невалидный JSON', 'error');
+        }
+    });
 });
